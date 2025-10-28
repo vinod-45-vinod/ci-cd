@@ -121,7 +121,7 @@ describe('Backend API Tests', () => {
         expect(response.body.status).toBe('pending');
         expect(response.body.message).toContain('PDF generation initiated');
       }
-    });
+    }, 15000);
 
     test('should generate different request IDs for different requests', async () => {
       const response1 = await request(app)
@@ -135,7 +135,7 @@ describe('Backend API Tests', () => {
       if (response1.statusCode === 200 && response2.statusCode === 200) {
         expect(response1.body.requestId).not.toBe(response2.body.requestId);
       }
-    });
+    }, 30000); // 30 seconds for two URL checks
   });
 
   // Status Check Tests
@@ -164,7 +164,7 @@ describe('Backend API Tests', () => {
         expect(statusResponse.body).toHaveProperty('status');
         expect(['pending', 'processing', 'completed', 'failed']).toContain(statusResponse.body.status);
       }
-    });
+    }, 15000); // 15 second timeout for URL check
   });
 
   // Download Tests
@@ -192,7 +192,7 @@ describe('Backend API Tests', () => {
         expect(downloadResponse.statusCode).toBe(400);
         expect(downloadResponse.body.error).toContain('PDF not ready');
       }
-    });
+    }, 20000); // 20 second timeout for URL check + download check
   });
 
   // Update PDF Tests
@@ -218,7 +218,7 @@ describe('Backend API Tests', () => {
         expect(updateResponse.statusCode).toBe(200);
         expect(updateResponse.body.success).toBe(true);
       }
-    });
+    }, 20000); // 20 second timeout for URL check + update
 
     test('should handle failed PDF generation', async () => {
       const createResponse = await request(app)
@@ -247,7 +247,7 @@ describe('Backend API Tests', () => {
         expect(statusResponse.body.status).toBe('failed');
         expect(statusResponse.body.error).toBe('Generation error');
       }
-    });
+    }, 20000); // 20 second timeout for URL check + update + status check
   });
 
   // CORS Tests
@@ -329,6 +329,6 @@ describe('Backend API Tests', () => {
         expect(status2Response.statusCode).toBe(200);
         expect(status2Response.body.status).toBe('completed');
       }
-    });
+    }, 20000); // 20 second timeout for complete flow with URL check
   });
 });
