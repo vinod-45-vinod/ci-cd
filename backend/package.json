@@ -10,6 +10,7 @@
     "test:coverage": "jest --coverage --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
     "lint": "eslint server.js server.test.js --max-warnings=0",
+    "lint:report": "eslint server.js server.test.js --max-warnings=0 --format json --output-file reports/eslint-report.json || true",
     "lint:fix": "eslint server.js server.test.js --fix"
   },
   "dependencies": {

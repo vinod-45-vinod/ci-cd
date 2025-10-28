@@ -399,7 +399,8 @@ jobs:
         working-directory: ./backend
         run: |
           mkdir -p reports
-          npm run lint -- --format json --output-file reports/eslint-report.json
+          npm run lint
+          npm run lint:report
           echo "✅ Backend lint check passed (zero errors)"
 
       - name: 📤 Upload lint report
