@@ -4,21 +4,3 @@ skips = B101,B601
 
 # Exclude specific paths
 exclude = /test_,/tests/,/__pycache__/,/htmlcov/
-
-# Set confidence level
-confidence = MEDIUM
-
-# Set severity level
-severity = MEDIUM
-
-# Output format
-format = json
-
-# Recursive scanning
-recursive = true
-
-[bandit.severity]
-# Define custom severity levels if needed
-low = false
-medium = true
-high = true

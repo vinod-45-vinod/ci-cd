@@ -79,7 +79,7 @@ describe('Backend API Tests', () => {
       
       // Should pass validation, but may fail accessibility check
       expect([200, 400]).toContain(response.statusCode);
-    });
+    }, 15000);
 
     test('should accept valid HTTPS URL format', async () => {
       const response = await request(app)
@@ -88,7 +88,7 @@ describe('Backend API Tests', () => {
       
       // Should pass validation, but may fail accessibility check
       expect([200, 400]).toContain(response.statusCode);
-    });
+    }, 15000);
 
     test('should accept URL with path and query parameters', async () => {
       const response = await request(app)
@@ -96,7 +96,7 @@ describe('Backend API Tests', () => {
         .send({ url: 'https://example.com/article?id=123&lang=en' });
       
       expect([200, 400]).toContain(response.statusCode);
-    });
+    }, 15000); // 15 second timeout for network checks
 
     test('should accept URL with subdomain', async () => {
       const response = await request(app)
@@ -104,7 +104,7 @@ describe('Backend API Tests', () => {
         .send({ url: 'https://blog.example.com/article' });
       
       expect([200, 400]).toContain(response.statusCode);
-    });
+    }, 15000);
   });
 
   // Request ID Tests
