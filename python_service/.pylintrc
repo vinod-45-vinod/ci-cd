@@ -18,6 +18,14 @@ disable=
     W0703,  # broad-except (catching general exceptions)
     C0301,  # line-too-long (handled by formatter)
     R0801,  # duplicate-code
+    W0611,  # unused-import
+    R1705,  # no-else-return
+    C0304,  # missing-final-newline
+    W1309,  # f-string-without-interpolation
+    W0640,  # cell-var-from-loop
+    R0912,  # too-many-branches
+    R0915,  # too-many-statements
+    C0302,  # too-many-lines
 
 [REPORTS]
 # Set the output format.

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Article PDF Generator Service", version="1.0.0")
 
-PDF_OUTPUT_DIR = os.getenv("PDF_OUTPUT_DIR", "/app/pdfs")
+PDF_OUTPUT_DIR = os.getenv("PDF_OUTPUT_DIR", "./pdfs")
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000")
 
 # Create directories

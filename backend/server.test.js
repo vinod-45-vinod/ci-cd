@@ -1,7 +1,22 @@
 const request = require('supertest');
-const app = require('./server');
+const { app, startServer, closeServer } = require('./server');
 
 describe('Backend API Tests', () => {
+  let server;
+
+  beforeAll(() => {
+    server = startServer();
+  });
+
+  afterAll((done) => {
+    closeServer();
+    if (server) {
+      server.close(done);
+    } else {
+      done();
+    }
+  });
+
   // Health Check Tests
   describe('GET /health', () => {
     test('should return healthy status', async () => {

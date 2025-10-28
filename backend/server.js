@@ -146,13 +146,24 @@ app.get('/health', (req, res) => {
   });
 });
 
+let server;
+
 const startServer = () => {
-  app.listen(PORT, '0.0.0.0', () => {
+  server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Backend server running on port ${PORT}`);
     console.log('Using in-memory storage (no database)');
   });
+  return server;
 };
 
-startServer();
+const closeServer = () => {
+  if (server) {
+    server.close();
+  }
+};
 
-module.exports = app;
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, startServer, closeServer };
