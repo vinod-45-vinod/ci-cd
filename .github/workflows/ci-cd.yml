@@ -91,10 +91,15 @@ jobs:
           pip install -r requirements.txt
           echo "✅ Python service dependencies installed"
       
-      - name: 🎭 Install Playwright
+      - name: 🎭 Install Playwright browsers
         run: |
-          python -m playwright install --with-deps chromium
-          echo "✅ Playwright and Chromium installed"
+          python -m playwright install chromium
+          echo "✅ Playwright Chromium installed"
+      
+      - name: 📦 Install system dependencies for Playwright
+        run: |
+          sudo python -m playwright install-deps chromium
+          echo "✅ System dependencies installed"
 
       - name: ✅ Validate environment
         working-directory: ./python_service
@@ -193,9 +198,13 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Install Playwright
+      - name: 🎭 Install Playwright browsers
         run: |
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
+      
+      - name: 📦 Install system dependencies for Playwright
+        run: |
+          sudo python -m playwright install-deps chromium
 
       - name: 🧪 Run unit and system tests
         working-directory: ./python_service
@@ -317,9 +326,13 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Install Playwright
+      - name: 🎭 Install Playwright browsers
         run: |
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
+      
+      - name: 📦 Install system dependencies for Playwright
+        run: |
+          sudo python -m playwright install-deps chromium
 
       - name: 📊 Generate coverage report
         working-directory: ./python_service

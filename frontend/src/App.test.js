@@ -211,8 +211,9 @@ describe('App Component', () => {
 
     await waitFor(() => {
       expect(input).toBeDisabled();
-      expect(screen.getByRole('button', { name: /Processing/i })).toBeDisabled();
     });
+    
+    expect(screen.getByRole('button', { name: /Processing/i })).toBeDisabled();
   });
 
   test('renders footer with sprint information', () => {
