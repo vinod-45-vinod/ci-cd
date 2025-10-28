@@ -375,8 +375,6 @@ jobs:
           name: frontend-lint-report
           path: frontend/reports/eslint-report.json
           retention-days: 30
-          path: frontend/eslint-report.json
-          retention-days: 30
 
   lint-backend:
     name: 🔍 Lint Backend (Zero Errors)
