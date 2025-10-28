@@ -9,8 +9,8 @@
     "test": "jest --detectOpenHandles --forceExit",
     "test:coverage": "jest --coverage --detectOpenHandles --forceExit",
     "test:watch": "jest --watch",
-    "lint": "eslint **/*.js --max-warnings=0",
-    "lint:fix": "eslint **/*.js --fix"
+    "lint": "eslint *.js --max-warnings=0",
+    "lint:fix": "eslint *.js --fix"
   },
   "dependencies": {
     "express": "^4.18.2",
