@@ -9,9 +9,11 @@ describe('Backend API Tests', () => {
   });
 
   afterAll((done) => {
-    closeServer();
     if (server) {
-      server.close(done);
+      server.close((err) => {
+        if (err) console.error('Error closing server:', err);
+        done();
+      });
     } else {
       done();
     }

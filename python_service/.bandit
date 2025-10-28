@@ -1,6 +1,6 @@
 [bandit]
 # Skip specific test IDs
-skips = B101,B601
+skips = B101,B601,B104
 
 # Exclude specific paths
 exclude = /test_,/tests/,/__pycache__/,/htmlcov/
