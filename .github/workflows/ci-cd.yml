@@ -91,15 +91,11 @@ jobs:
           pip install -r requirements.txt
           echo "✅ Python service dependencies installed"
       
-      - name: 🎭 Install Playwright browsers
+      - name: 🎭 Install Playwright and dependencies
         run: |
-          python -m playwright install chromium
-          echo "✅ Playwright Chromium installed"
-      
-      - name: 📦 Install system dependencies for Playwright
-        run: |
-          sudo python -m playwright install-deps chromium
-          echo "✅ System dependencies installed"
+          playwright install chromium
+          sudo playwright install-deps chromium
+          echo "✅ Playwright Chromium and dependencies installed"
 
       - name: ✅ Validate environment
         working-directory: ./python_service
@@ -198,13 +194,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Install Playwright browsers
+      - name: 🎭 Install Playwright and dependencies
         run: |
-          python -m playwright install chromium
-      
-      - name: 📦 Install system dependencies for Playwright
-        run: |
-          sudo python -m playwright install-deps chromium
+          playwright install chromium
+          sudo playwright install-deps chromium
 
       - name: 🧪 Run unit and system tests
         working-directory: ./python_service
@@ -326,13 +319,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Install Playwright browsers
+      - name: 🎭 Install Playwright and dependencies
         run: |
-          python -m playwright install chromium
-      
-      - name: 📦 Install system dependencies for Playwright
-        run: |
-          sudo python -m playwright install-deps chromium
+          playwright install chromium
+          sudo playwright install-deps chromium
 
       - name: 📊 Generate coverage report
         working-directory: ./python_service
@@ -374,8 +364,8 @@ jobs:
       - name: 🔍 Run ESLint
         working-directory: ./frontend
         run: |
-          npm run lint -- --format json --output-file eslint-report.json || true
-          npm run lint
+          mkdir -p reports
+          npm run lint -- --format json --output-file reports/eslint-report.json
           echo "✅ Frontend lint check passed (zero errors)"
 
       - name: 📤 Upload lint report
@@ -383,6 +373,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-lint-report
+          path: frontend/reports/eslint-report.json
+          retention-days: 30
           path: frontend/eslint-report.json
           retention-days: 30
 
@@ -409,8 +401,7 @@ jobs:
         working-directory: ./backend
         run: |
           mkdir -p reports
-          npm run lint -- --format json --output-file reports/eslint-report.json || true
-          npm run lint
+          npm run lint -- --format json --output-file reports/eslint-report.json
           echo "✅ Backend lint check passed (zero errors)"
 
       - name: 📤 Upload lint report
