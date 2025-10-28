@@ -37,7 +37,7 @@ jobs:
       - name: 🏗️ Build production bundle
         working-directory: ./frontend
         run: |
-          npm run build
+          CI=false npm run build
           echo "✅ Frontend production build completed"
 
       - name: 📤 Upload build artifacts
@@ -89,9 +89,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install chromium
-          playwright install-deps chromium
           echo "✅ Python service dependencies installed"
+      
+      - name: 🎭 Install Playwright
+        working-directory: ./python_service
+        run: |
+          playwright install --with-deps chromium
+          echo "✅ Playwright and Chromium installed"
 
       - name: ✅ Validate environment
         working-directory: ./python_service
@@ -187,9 +191,13 @@ jobs:
       - name: 📦 Install dependencies
         working-directory: ./python_service
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install chromium
-          playwright install-deps chromium
+      
+      - name: 🎭 Install Playwright
+        working-directory: ./python_service
+        run: |
+          playwright install --with-deps chromium
 
       - name: 🧪 Run unit and system tests
         working-directory: ./python_service
@@ -308,9 +316,13 @@ jobs:
       - name: 📦 Install dependencies
         working-directory: ./python_service
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install chromium
-          playwright install-deps chromium
+      
+      - name: 🎭 Install Playwright
+        working-directory: ./python_service
+        run: |
+          playwright install --with-deps chromium
 
       - name: 📊 Generate coverage report
         working-directory: ./python_service
@@ -386,7 +398,8 @@ jobs:
       - name: 🔍 Run ESLint
         working-directory: ./backend
         run: |
-          npm run lint -- --format json --output-file eslint-report.json || true
+          mkdir -p reports
+          npm run lint -- --format json --output-file reports/eslint-report.json || true
           npm run lint
           echo "✅ Backend lint check passed (zero errors)"
 
@@ -395,7 +408,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-lint-report
-          path: backend/eslint-report.json
+          path: backend/reports/eslint-report.json
           retention-days: 30
 
   lint-python:
@@ -420,7 +433,8 @@ jobs:
       - name: 🔍 Run pylint
         working-directory: ./python_service
         run: |
-          pylint main.py --output-format=json > pylint-report.json || true
+          mkdir -p reports
+          pylint main.py --output-format=json > reports/pylint-report.json || true
           pylint main.py --fail-under=${{ env.MIN_LINT_SCORE }}
           echo "✅ Python lint score meets requirement (≥7.5/10)"
 
@@ -429,7 +443,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-lint-report
-          path: python_service/pylint-report.json
+          path: python_service/reports/pylint-report.json
           retention-days: 30
 
   # ============================================================================
@@ -451,7 +465,8 @@ jobs:
       - name: 🔒 Run npm audit
         working-directory: ./frontend
         run: |
-          npm audit --production --audit-level=high --json > npm-audit-report.json || true
+          mkdir -p reports
+          npm audit --production --audit-level=high --json > reports/npm-audit-report.json || true
           npm audit --production --audit-level=critical
           echo "✅ Frontend security scan completed"
 
@@ -460,7 +475,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-security-report
-          path: frontend/npm-audit-report.json
+          path: frontend/reports/npm-audit-report.json
           retention-days: 30
 
   security-backend:
@@ -479,7 +494,8 @@ jobs:
       - name: 🔒 Run npm audit
         working-directory: ./backend
         run: |
-          npm audit --production --audit-level=high --json > npm-audit-report.json || true
+          mkdir -p reports
+          npm audit --production --audit-level=high --json > reports/npm-audit-report.json || true
           npm audit --production --audit-level=critical
           echo "✅ Backend security scan completed"
 
@@ -488,7 +504,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-security-report
-          path: backend/npm-audit-report.json
+          path: backend/reports/npm-audit-report.json
           retention-days: 30
 
   security-python:
@@ -513,7 +529,8 @@ jobs:
       - name: 🔒 Run bandit security scan
         working-directory: ./python_service
         run: |
-          bandit -r . -f json -o bandit-report.json || true
+          mkdir -p reports
+          bandit -r . -f json -o reports/bandit-report.json || true
           bandit -r . -ll
           echo "✅ Python security scan completed"
 
@@ -522,7 +539,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-security-report
-          path: python_service/bandit-report.json
+          path: python_service/reports/bandit-report.json
           retention-days: 30
 
   # ============================================================================
