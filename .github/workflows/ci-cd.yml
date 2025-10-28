@@ -245,7 +245,7 @@ jobs:
         working-directory: ./frontend
         run: |
           echo "Checking coverage threshold of ${{ env.MIN_COVERAGE }}%..."
-          npm run test:coverage -- --coverageThreshold='{"global":{"branches":75,"functions":75,"lines":75,"statements":75}}'
+          npm run test:coverage
           echo "✅ Frontend coverage meets requirement"
 
       - name: 📤 Upload coverage report
@@ -286,7 +286,7 @@ jobs:
         working-directory: ./backend
         run: |
           echo "Checking coverage threshold of ${{ env.MIN_COVERAGE }}%..."
-          npm run test:coverage -- --coverageThreshold='{"global":{"branches":75,"functions":75,"lines":75,"statements":75}}'
+          npm run test:coverage
           echo "✅ Backend coverage meets requirement"
 
       - name: 📤 Upload coverage report

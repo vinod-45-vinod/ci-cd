@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { app, startServer, closeServer } = require('./server');
+const { app, startServer } = require('./server');
 
 describe('Backend API Tests', () => {
   let server;
