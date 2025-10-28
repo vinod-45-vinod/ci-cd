@@ -20,7 +20,7 @@ def test_parse_article():
     from main import parse_article
     html = """<html><body><article><h1>Test Article</h1><p>This is a test paragraph.</p>
     <aside class="ad">Advertisement</aside></article></body></html>"""
-    cleaned_html, title = parse_article(html)
+    cleaned_html, title = parse_article(html, "https://example.com")
     assert "Test Article" in title
     assert "test paragraph" in cleaned_html
     assert "Advertisement" not in cleaned_html

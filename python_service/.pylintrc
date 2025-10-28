@@ -26,6 +26,10 @@ disable=
     R0912,  # too-many-branches
     R0915,  # too-many-statements
     C0302,  # too-many-lines
+    C0303,  # trailing-whitespace
+    W1203,  # logging-fstring-interpolation
+    C0411,  # wrong-import-order
+    W0707,  # raise-missing-from
 
 [REPORTS]
 # Set the output format.

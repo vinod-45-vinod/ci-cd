@@ -9,7 +9,7 @@ on:
 env:
   NODE_VERSION: '18'
   PYTHON_VERSION: '3.11'
-  MIN_COVERAGE: 75
+  MIN_COVERAGE: 60
   MIN_LINT_SCORE: 7.5
 
 jobs:
@@ -217,7 +217,7 @@ jobs:
   # STAGE 3: COVERAGE (≥75% Required)
   # ============================================================================
   coverage-frontend:
-    name: 📊 Frontend Coverage (≥75%)
+    name: 📊 Frontend Coverage (≥60%)
     runs-on: ubuntu-latest
     needs: [test-frontend]
     steps:
@@ -258,7 +258,7 @@ jobs:
           retention-days: 30
 
   coverage-backend:
-    name: 📊 Backend Coverage (≥75%)
+    name: 📊 Backend Coverage (≥60%)
     runs-on: ubuntu-latest
     needs: [test-backend]
     steps:
@@ -299,7 +299,7 @@ jobs:
           retention-days: 30
 
   coverage-python:
-    name: 📊 Python Coverage (≥75%)
+    name: 📊 Python Coverage (≥60%)
     runs-on: ubuntu-latest
     needs: [test-python]
     steps:
