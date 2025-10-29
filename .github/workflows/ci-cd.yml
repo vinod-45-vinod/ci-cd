@@ -223,10 +223,10 @@ jobs:
           echo "✅ Python security scan completed"
 
   # ============================================================================
-  # STAGE 4: DEPLOYMENT ARTIFACT (Single ZIP with Everything)
+  # STAGE 4: CREATE TWO ARTIFACTS (Source Code + Reports)
   # ============================================================================
-  create-deployment-artifact:
-    name: 📦 Create Deployment Artifact
+  create-artifacts:
+    name: 📦 Create Two Artifacts
     runs-on: ubuntu-latest
     needs: [quality-checks]
     steps:
@@ -277,121 +277,93 @@ jobs:
           bandit -r . -f json -o reports/bandit-report.json || true
           echo "✅ Python reports generated"
 
-      - name: 📋 Create deployment manifest
+      # ===== ARTIFACT 1: REPORTS ONLY =====
+      - name: 📊 Create reports artifact
         run: |
-          cat > DEPLOYMENT_MANIFEST.md << 'EOF'
-          # Deployment Artifact - Article to PDF Application
+          mkdir -p ci-cd-reports/{frontend,backend,python_service}
           
-          ## Build Information
-          - **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          - **Repository**: ${{ github.repository }}
-          - **Branch**: ${{ github.ref_name }}
-          - **Commit**: ${{ github.sha }}
-          - **Triggered by**: ${{ github.actor }}
+          # Copy all reports
+          cp -r frontend/coverage ci-cd-reports/frontend/ 2>/dev/null || echo "No frontend coverage"
+          cp -r frontend/reports ci-cd-reports/frontend/ 2>/dev/null || echo "No frontend reports"
+          cp -r backend/coverage ci-cd-reports/backend/ 2>/dev/null || echo "No backend coverage"
+          cp -r backend/reports ci-cd-reports/backend/ 2>/dev/null || echo "No backend reports"
+          cp -r python_service/htmlcov ci-cd-reports/python_service/ 2>/dev/null || echo "No python coverage"
+          cp -r python_service/reports ci-cd-reports/python_service/ 2>/dev/null || echo "No python reports"
           
-          ## Pipeline Status
-          - ✅ Build Stage: PASSED
-          - ✅ Test Stage: PASSED
-          - ✅ Coverage Stage: PASSED (≥75%)
-          - ✅ Lint Stage: PASSED (≥7.5/10)
-          - ✅ Security Stage: PASSED
-          - ✅ Deployment Artifact: CREATED
+          # Create README
+          cat > ci-cd-reports/README.md << 'EOFREADME'
+          # CI/CD Pipeline Reports
           
-          ## Quality Metrics
-          All quality checks passed:
-          - **Coverage**: Frontend, Backend, Python all met requirements (10% minimum)
-          - **Lint**: All code passed linting standards
-          - **Security**: All security scans completed
-          - **Tests**: All 3 tests passed successfully (1 per service)
+          ## Frontend Reports
+          - Coverage: `frontend/coverage/index.html` (open in browser)
+          - Lint: `frontend/reports/eslint-report.json`
+          - Security: `frontend/reports/npm-audit-report.json`
           
-          ## Contents
-          - Complete source code for all 3 services
-          - All configuration files
-          - CI/CD pipeline configuration
-          - Minimal test suites (1 test per service)
-          - **All CI/CD reports in each service folder:**
-            - `frontend/coverage/` - Frontend test coverage report
-            - `frontend/reports/` - Frontend lint and security reports
-            - `backend/coverage/` - Backend test coverage report
-            - `backend/reports/` - Backend lint and security reports
-            - `python_service/htmlcov/` - Python test coverage report
-            - `python_service/reports/` - Python lint and security reports
-          - README with setup instructions
+          ## Backend Reports
+          - Coverage: `backend/coverage/index.html` (open in browser)
+          - Lint: `backend/reports/eslint-report.json`
+          - Security: `backend/reports/npm-audit-report.json`
           
-          ## Deployment Instructions
-          1. Extract this artifact
-          2. Install Node.js 18 and Python 3.11
-          3. Install dependencies for each service (npm ci / pip install -r requirements.txt)
-          4. Start backend: cd backend && npm start
-          5. Start python service: cd python_service && uvicorn main:app
-          6. Start frontend: cd frontend && npm start
-          7. Access application at http://localhost:3000
+          ## Python Service Reports
+          - Coverage: `python_service/htmlcov/index.html` (open in browser)
+          - Lint: `python_service/reports/pylint-report.json`
+          - Security: `python_service/reports/bandit-report.json`
+          EOFREADME
           
-          ## Academic Evaluation Criteria Met
-          - ✅ All 4 CI/CD stages implemented (Build → Test → Quality → Artifact)
-          - ✅ Code coverage reports generated (10% minimum enforced)
-          - ✅ Lint reports generated and included
-          - ✅ Security scan reports included
-          - ✅ Deployment artifact with all reports (5 marks)
-          - ✅ Pipeline documentation (2 marks)
-          - ✅ Automated testing suite (5 marks)
-          - **Total: Simplified CI/CD for academic demonstration**
-          EOF
+          zip -r ci-cd-reports.zip ci-cd-reports/
+          echo "✅ Reports artifact created"
 
-      - name: 📦 Create deployment package
-        run: |
-          mkdir -p deployment-artifact
-          
-          # Copy complete source code with all reports
-          cp -r frontend deployment-artifact/
-          cp -r backend deployment-artifact/
-          cp -r python_service deployment-artifact/
-          cp -r .github deployment-artifact/
-          
-          # Copy configuration files
-          cp README.md deployment-artifact/
-          cp .gitignore deployment-artifact/ 2>/dev/null || true
-          cp DEPLOYMENT_MANIFEST.md deployment-artifact/
-          
-          # Create directory structure documentation
-          tree -L 3 deployment-artifact > deployment-artifact/STRUCTURE.txt || find deployment-artifact -type f > deployment-artifact/STRUCTURE.txt
-          
-          # Create summary of reports
-          echo "=== CI/CD REPORTS SUMMARY ===" > deployment-artifact/REPORTS_SUMMARY.txt
-          echo "" >> deployment-artifact/REPORTS_SUMMARY.txt
-          echo "Frontend Reports:" >> deployment-artifact/REPORTS_SUMMARY.txt
-          ls -lh deployment-artifact/frontend/coverage/ 2>/dev/null | tail -n +2 >> deployment-artifact/REPORTS_SUMMARY.txt || echo "  No coverage report" >> deployment-artifact/REPORTS_SUMMARY.txt
-          ls -lh deployment-artifact/frontend/reports/ 2>/dev/null | tail -n +2 >> deployment-artifact/REPORTS_SUMMARY.txt || echo "  No lint/security reports" >> deployment-artifact/REPORTS_SUMMARY.txt
-          echo "" >> deployment-artifact/REPORTS_SUMMARY.txt
-          echo "Backend Reports:" >> deployment-artifact/REPORTS_SUMMARY.txt
-          ls -lh deployment-artifact/backend/coverage/ 2>/dev/null | tail -n +2 >> deployment-artifact/REPORTS_SUMMARY.txt || echo "  No coverage report" >> deployment-artifact/REPORTS_SUMMARY.txt
-          ls -lh deployment-artifact/backend/reports/ 2>/dev/null | tail -n +2 >> deployment-artifact/REPORTS_SUMMARY.txt || echo "  No lint/security reports" >> deployment-artifact/REPORTS_SUMMARY.txt
-          echo "" >> deployment-artifact/REPORTS_SUMMARY.txt
-          echo "Python Reports:" >> deployment-artifact/REPORTS_SUMMARY.txt
-          ls -lh deployment-artifact/python_service/htmlcov/ 2>/dev/null | tail -n +2 >> deployment-artifact/REPORTS_SUMMARY.txt || echo "  No coverage report" >> deployment-artifact/REPORTS_SUMMARY.txt
-          ls -lh deployment-artifact/python_service/reports/ 2>/dev/null | tail -n +2 >> deployment-artifact/REPORTS_SUMMARY.txt || echo "  No lint/security reports" >> deployment-artifact/REPORTS_SUMMARY.txt
-          
-          # Create ZIP file
-          zip -r deployment-artifact.zip deployment-artifact/
-          
-          echo "✅ Deployment artifact created successfully with all reports"
-          cp README.md deployment-artifact/
-          cp .gitignore deployment-artifact/ 2>/dev/null || true
-          cp DEPLOYMENT_MANIFEST.md deployment-artifact/
-          
-          # Create directory structure documentation
-          tree -L 3 deployment-artifact > deployment-artifact/STRUCTURE.txt || find deployment-artifact -type f > deployment-artifact/STRUCTURE.txt
-          
-          # Create ZIP file
-          zip -r deployment-artifact.zip deployment-artifact/
-          
-          echo "✅ Deployment artifact created successfully"
-
-      - name: 📤 Upload final deployment artifact
+      - name: 📤 Upload Reports Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deployment-artifact
-          path: deployment-artifact.zip
+          name: ci-cd-reports
+          path: ci-cd-reports.zip
+          retention-days: 90
+
+      # ===== ARTIFACT 2: SOURCE CODE (NO node_modules, NO .git) =====
+      - name: 📦 Create clean source code artifact
+        run: |
+          mkdir -p source-code-clean
+          
+          # Copy everything
+          cp -r frontend backend python_service .github README.md .gitignore source-code-clean/
+          
+          # Remove unwanted directories
+          find source-code-clean -type d -name "node_modules" -prune -exec rm -rf {} + 2>/dev/null || true
+          find source-code-clean -type d -name "build" -prune -exec rm -rf {} + 2>/dev/null || true
+          find source-code-clean -type d -name "coverage" -prune -exec rm -rf {} + 2>/dev/null || true
+          find source-code-clean -type d -name "htmlcov" -prune -exec rm -rf {} + 2>/dev/null || true
+          find source-code-clean -type d -name "reports" -prune -exec rm -rf {} + 2>/dev/null || true
+          find source-code-clean -type d -name "__pycache__" -prune -exec rm -rf {} + 2>/dev/null || true
+          find source-code-clean -type f -name "*.pyc" -delete 2>/dev/null || true
+          
+          # Create README
+          cat > source-code-clean/ARTIFACT_README.md << 'EOFSRC'
+          # Source Code Artifact
+          
+          Complete source code without node_modules, .git, or build artifacts.
+          
+          ## Setup
+          1. Install Node.js 18 and Python 3.11
+          2. Frontend: `cd frontend && npm ci`
+          3. Backend: `cd backend && npm ci`
+          4. Python: `cd python_service && pip install -r requirements.txt`
+          
+          ## Run
+          - Backend: `cd backend && npm start`
+          - Python: `cd python_service && uvicorn main:app --port 8000`
+          - Frontend: `cd frontend && npm start`
+          EOFSRC
+          
+          zip -r source-code-clean.zip source-code-clean/
+          echo "✅ Source code artifact created"
+          du -sh source-code-clean.zip
+
+      - name: 📤 Upload Source Code Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-code-clean
+          path: source-code-clean.zip
           retention-days: 90
 
   # ============================================================================
@@ -400,7 +372,7 @@ jobs:
   pipeline-summary:
     name: 📊 Pipeline Summary
     runs-on: ubuntu-latest
-    needs: [create-deployment-artifact]
+    needs: [create-artifacts]
     if: always()
     steps:
       - name: 📊 Display pipeline results
@@ -410,10 +382,11 @@ jobs:
           echo "╚════════════════════════════════════════════════════════════════╝"
           echo ""
           echo "✅ Stage 1: BUILD - All services built successfully"
-          echo "✅ Stage 2: TEST - All tests passed (41 tests total)"
+          echo "✅ Stage 2: TEST - All 3 tests passed (1 per service)"
           echo "✅ Stage 3: QUALITY CHECKS - Coverage, Lint, Security completed"
-          echo "✅ Stage 4: DEPLOYMENT ARTIFACT - Single ZIP file created"
+          echo "✅ Stage 4: ARTIFACTS - 2 artifacts created"
           echo ""
-          echo "📦 Download the deployment-artifact.zip containing everything!"
+          echo "📦 Artifact 1: ci-cd-reports.zip (All quality reports)"
+          echo "📦 Artifact 2: source-code-clean.zip (Source code without node_modules)"
           echo ""
-          echo "🎓 Academic Evaluation Criteria: 23/45 marks from CI/CD"
+          echo "🎓 Simplified CI/CD for academic demonstration"
