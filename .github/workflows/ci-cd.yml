@@ -314,12 +314,12 @@ jobs:
           retention-days: 30
 
   # ============================================================================
-  # STAGE 4: LINT (Report Only - No Strict Enforcement)
+  # STAGE 4: LINT (Runs in parallel with Coverage)
   # ============================================================================
   lint-frontend:
     name: 🔍 Lint Frontend
     runs-on: ubuntu-latest
-    needs: [build-frontend]
+    needs: [test-frontend]
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -351,7 +351,7 @@ jobs:
   lint-backend:
     name: 🔍 Lint Backend
     runs-on: ubuntu-latest
-    needs: [build-backend]
+    needs: [test-backend]
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -383,7 +383,7 @@ jobs:
   lint-python:
     name: 🔍 Lint Python
     runs-on: ubuntu-latest
-    needs: [build-python]
+    needs: [test-python]
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -413,12 +413,12 @@ jobs:
           retention-days: 30
 
   # ============================================================================
-  # STAGE 5: SECURITY (Report Only - No Strict Enforcement)
+  # STAGE 5: SECURITY (Runs in parallel with Coverage and Lint)
   # ============================================================================
   security-frontend:
     name: 🔒 Security Scan - Frontend
     runs-on: ubuntu-latest
-    needs: [lint-frontend]
+    needs: [test-frontend]
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -446,7 +446,7 @@ jobs:
   security-backend:
     name: 🔒 Security Scan - Backend
     runs-on: ubuntu-latest
-    needs: [lint-backend]
+    needs: [test-backend]
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -474,7 +474,7 @@ jobs:
   security-python:
     name: 🔒 Security Scan - Python
     runs-on: ubuntu-latest
-    needs: [lint-python]
+    needs: [test-python]
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
