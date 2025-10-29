@@ -169,17 +169,17 @@ jobs:
       - name: 📊 Frontend Coverage
         working-directory: ./frontend
         run: |
-          npm run test:coverage || true
+          npm run test:coverage
           echo "✅ Frontend coverage generated"
 
-      - name: � Frontend Lint
+      - name: 🔍 Frontend Lint
         working-directory: ./frontend
         run: |
           mkdir -p reports
-          npm run lint -- --format json --output-file reports/eslint-report.json || true
+          npm run lint -- --format json --output-file reports/eslint-report.json
           echo "✅ Frontend lint completed"
 
-      - name: � Frontend Security
+      - name: 🔒 Frontend Security
         working-directory: ./frontend
         run: |
           npm audit --production --json > reports/npm-audit-report.json || true
@@ -190,20 +190,20 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: � Backend Coverage
+      - name: 📊 Backend Coverage
         working-directory: ./backend
         run: |
-          npm run test:coverage || true
+          npm run test:coverage
           echo "✅ Backend coverage generated"
 
-      - name: � Backend Lint
+      - name: 🔍 Backend Lint
         working-directory: ./backend
         run: |
           mkdir -p reports
-          npm run lint:report || true
+          npm run lint:report
           echo "✅ Backend lint completed"
 
-      - name: � Backend Security
+      - name: 🔒 Backend Security
         working-directory: ./backend
         run: |
           npm audit --production --json > reports/npm-audit-report.json || true
@@ -221,17 +221,17 @@ jobs:
           python -m playwright install chromium
           sudo python -m playwright install-deps chromium || echo "Warning: Could not install system deps"
 
-      - name: � Python Coverage
+      - name: 📊 Python Coverage
         working-directory: ./python_service
         run: |
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml || true
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           echo "✅ Python coverage generated"
 
-      - name: � Python Lint
+      - name: 🔍 Python Lint
         working-directory: ./python_service
         run: |
           mkdir -p reports
-          pylint main.py --output-format=json > reports/pylint-report.json || true
+          pylint main.py --output-format=json > reports/pylint-report.json
           echo "✅ Python lint completed"
 
       - name: 🔒 Python Security
