@@ -63,13 +63,12 @@ jobs:
         continue-on-error: true
         run: |
           echo "Attempting Playwright installation..."
-          # Try once with timeout, skip if fails
-          timeout 120s python -m playwright install chromium 2>&1 | tee /tmp/playwright.log || {
+          if timeout 120s python -m playwright install chromium; then
+            echo "✅ Playwright installed successfully"
+          else
             echo "⚠️ Playwright installation failed (network issues)"
             echo "Continuing without browser - tests will run in API-only mode"
-            exit 0
-          }
-          echo "✅ Playwright installed successfully"
+          fi
 
   # ============================================================================
   # STAGE 2: TEST (All Services)
@@ -123,12 +122,12 @@ jobs:
         continue-on-error: true
         run: |
           echo "Attempting Playwright installation..."
-          timeout 120s python -m playwright install chromium 2>&1 | tee /tmp/playwright.log || {
+          if timeout 120s python -m playwright install chromium; then
+            echo "✅ Playwright installed successfully"
+          else
             echo "⚠️ Playwright installation failed (network issues)"
             echo "Continuing without browser - tests will run in API-only mode"
-            exit 0
-          }
-          echo "✅ Playwright installed successfully"
+          fi
 
       - name: 🧪 Run Python tests
         working-directory: ./python_service
@@ -217,12 +216,12 @@ jobs:
         continue-on-error: true
         run: |
           echo "Attempting Playwright installation..."
-          timeout 120s python -m playwright install chromium 2>&1 | tee /tmp/playwright.log || {
+          if timeout 120s python -m playwright install chromium; then
+            echo "✅ Playwright installed successfully"
+          else
             echo "⚠️ Playwright installation failed (network issues)"
             echo "Continuing without browser - tests will run in API-only mode"
-            exit 0
-          }
-          echo "✅ Playwright installed successfully"
+          fi
 
       - name: 📊 Python Coverage
         working-directory: ./python_service
@@ -293,10 +292,12 @@ jobs:
           
           # Try Playwright installation (skip on failure)
           echo "Attempting Playwright installation..."
-          timeout 120s python -m playwright install chromium 2>&1 | tee /tmp/playwright.log || {
+          if timeout 120s python -m playwright install chromium; then
+            echo "✅ Playwright installed successfully"
+          else
             echo "⚠️ Playwright installation failed (network issues)"
             echo "Continuing without browser - tests will run in API-only mode"
-          }
+          fi
           
           echo "✅ Python dependencies installed"
           pytest test_main.py --cov=main --cov-report=html --cov-report=xml
