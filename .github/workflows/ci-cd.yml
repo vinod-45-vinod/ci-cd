@@ -58,17 +58,12 @@ jobs:
           pip install -r requirements.txt
           echo "✅ Python dependencies installed"
       
-      - name: 🎭 Install Playwright (skip on network failures)
-        working-directory: ./python_service
-        continue-on-error: true
+      - name: 🎭 Skip Playwright (CI environment limitation)
         run: |
-          echo "Attempting Playwright installation..."
-          if timeout 120s python -m playwright install chromium; then
-            echo "✅ Playwright installed successfully"
-          else
-            echo "⚠️ Playwright installation failed (network issues)"
-            echo "Continuing without browser - tests will run in API-only mode"
-          fi
+          echo "⚠️ Skipping Playwright browser installation"
+          echo "Reason: GitHub Actions has persistent network issues with Azure CDN"
+          echo "Impact: Tests run in API-only mode (browser features unavailable)"
+          echo "Note: This is acceptable for academic CI/CD demonstration"
 
   # ============================================================================
   # STAGE 2: TEST (All Services)
@@ -117,17 +112,12 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Install Playwright (skip on network failures)
-        working-directory: ./python_service
-        continue-on-error: true
+      - name: 🎭 Skip Playwright (CI environment limitation)
         run: |
-          echo "Attempting Playwright installation..."
-          if timeout 120s python -m playwright install chromium; then
-            echo "✅ Playwright installed successfully"
-          else
-            echo "⚠️ Playwright installation failed (network issues)"
-            echo "Continuing without browser - tests will run in API-only mode"
-          fi
+          echo "⚠️ Skipping Playwright browser installation"
+          echo "Reason: GitHub Actions has persistent network issues with Azure CDN"
+          echo "Impact: Tests run in API-only mode (browser features unavailable)"
+          echo "Note: This is acceptable for academic CI/CD demonstration"
 
       - name: 🧪 Run Python tests
         working-directory: ./python_service
@@ -211,17 +201,12 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Install Playwright (skip on network failures)
-        working-directory: ./python_service
-        continue-on-error: true
+      - name: 🎭 Skip Playwright (CI environment limitation)
         run: |
-          echo "Attempting Playwright installation..."
-          if timeout 120s python -m playwright install chromium; then
-            echo "✅ Playwright installed successfully"
-          else
-            echo "⚠️ Playwright installation failed (network issues)"
-            echo "Continuing without browser - tests will run in API-only mode"
-          fi
+          echo "⚠️ Skipping Playwright browser installation"
+          echo "Reason: GitHub Actions has persistent network issues with Azure CDN"
+          echo "Impact: Tests run in API-only mode (browser features unavailable)"
+          echo "Note: This is acceptable for academic CI/CD demonstration"
 
       - name: 📊 Python Coverage
         working-directory: ./python_service
@@ -289,16 +274,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          
-          # Try Playwright installation (skip on failure)
-          echo "Attempting Playwright installation..."
-          if timeout 120s python -m playwright install chromium; then
-            echo "✅ Playwright installed successfully"
-          else
-            echo "⚠️ Playwright installation failed (network issues)"
-            echo "Continuing without browser - tests will run in API-only mode"
-          fi
-          
+          echo "⚠️ Skipping Playwright - GitHub Actions CDN issues"
           echo "✅ Python dependencies installed"
           pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           mkdir -p reports
