@@ -17,7 +17,7 @@ jobs:
   # STAGE 1: BUILD (All Services)
   # ============================================================================
   build:
-    name: 🏗️ Build All Services
+    name: Build All Services
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
@@ -58,16 +58,17 @@ jobs:
           pip install -r requirements.txt
           echo "✅ Python dependencies installed"
       
-      - name: 🎭 Skip Playwright (network issues in CI)
+      - name: 🎭 Install Playwright browsers
+        working-directory: ./python_service
         run: |
-          echo "⚠️ Skipping Playwright installation due to persistent network issues"
-          echo "Tests will run without browser automation"
+          python -m playwright install chromium
+          echo "✅ Playwright browsers installed"
 
   # ============================================================================
   # STAGE 2: TEST (All Services)
   # ============================================================================
   test:
-    name: 🧪 Test All Services
+    name: Test All Services
     runs-on: ubuntu-latest
     needs: [build]
     steps:
@@ -110,21 +111,23 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Skip Playwright (Test Stage)
+      - name: 🎭 Install Playwright browsers
+        working-directory: ./python_service
         run: |
-          echo "⚠️ Skipping Playwright - tests will run without browser"
+          python -m playwright install chromium
+          echo "✅ Playwright installed for tests"
 
       - name: 🧪 Run Python tests
         working-directory: ./python_service
         run: |
-          pytest test_main.py -v --cov=main --cov-report=html --cov-report=term || true
+          pytest test_main.py -v --cov=main --cov-report=html --cov-report=term
           echo "✅ Python tests completed"
 
   # ============================================================================
   # STAGE 3: QUALITY CHECKS (Coverage, Lint, Security - All Combined)
   # ============================================================================
   quality-checks:
-    name: 📊 Quality Checks (Coverage, Lint, Security)
+    name: Quality Checks (Coverage, Lint, Security)
     runs-on: ubuntu-latest
     needs: [test]
     steps:
@@ -162,7 +165,7 @@ jobs:
       - name: 🔒 Frontend Security
         working-directory: ./frontend
         run: |
-          npm audit --production --json > reports/npm-audit-report.json || true
+          npm audit --production --json > reports/npm-audit-report.json
           echo "✅ Frontend security scan completed"
 
       # Backend Quality Checks
@@ -186,7 +189,7 @@ jobs:
       - name: 🔒 Backend Security
         working-directory: ./backend
         run: |
-          npm audit --production --json > reports/npm-audit-report.json || true
+          npm audit --production --json > reports/npm-audit-report.json
           echo "✅ Backend security scan completed"
 
       # Python Quality Checks
@@ -196,14 +199,16 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
       
-      - name: 🎭 Skip Playwright (Quality Stage)
+      - name: 🎭 Install Playwright browsers
+        working-directory: ./python_service
         run: |
-          echo "⚠️ Skipping Playwright - coverage will be generated without browser"
+          python -m playwright install chromium
+          echo "✅ Playwright installed for quality checks"
 
       - name: 📊 Python Coverage
         working-directory: ./python_service
         run: |
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml || true
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           echo "✅ Python coverage generated"
 
       - name: 🔍 Python Lint
@@ -216,14 +221,14 @@ jobs:
       - name: 🔒 Python Security
         working-directory: ./python_service
         run: |
-          bandit -r . -f json -o reports/bandit-report.json || true
+          bandit -r . -f json -o reports/bandit-report.json
           echo "✅ Python security scan completed"
 
   # ============================================================================
   # STAGE 4: CREATE TWO ARTIFACTS (Source Code + Reports)
   # ============================================================================
   create-artifacts:
-    name: 📦 Create Two Artifacts
+    name: Create Two Artifacts
     runs-on: ubuntu-latest
     needs: [quality-checks]
     steps:
@@ -245,20 +250,20 @@ jobs:
         working-directory: ./frontend
         run: |
           npm ci
-          npm run test:coverage || true
+          npm run test:coverage
           mkdir -p reports
-          npm run lint -- --format json --output-file reports/eslint-report.json || true
-          npm audit --production --json > reports/npm-audit-report.json || true
+          npm run lint -- --format json --output-file reports/eslint-report.json
+          npm audit --production --json > reports/npm-audit-report.json
           echo "✅ Frontend reports generated"
 
       - name: 📦 Install Backend dependencies and generate reports
         working-directory: ./backend
         run: |
           npm ci
-          npm run test:coverage || true
+          npm run test:coverage
           mkdir -p reports
-          npm run lint:report || true
-          npm audit --production --json > reports/npm-audit-report.json || true
+          npm run lint:report
+          npm audit --production --json > reports/npm-audit-report.json
           echo "✅ Backend reports generated"
 
       - name: 📦 Install Python dependencies and generate reports
@@ -266,15 +271,16 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          echo "⚠️ Skipping Playwright installation"
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml || true
+          python -m playwright install chromium
+          echo "✅ Python dependencies and Playwright installed"
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           mkdir -p reports
-          pylint main.py --output-format=json > reports/pylint-report.json || true
-          bandit -r . -f json -o reports/bandit-report.json || true
+          pylint main.py --output-format=json > reports/pylint-report.json
+          bandit -r . -f json -o reports/bandit-report.json
           echo "✅ Python reports generated"
 
       # ===== ARTIFACT 1: REPORTS ONLY =====
-      - name: 📊 Create reports artifact
+      - name:  Create reports artifact
         run: |
           mkdir -p ci-cd-reports/{frontend,backend,python_service}
           
@@ -317,7 +323,7 @@ jobs:
           retention-days: 90
 
       # ===== ARTIFACT 2: SOURCE CODE (NO node_modules, NO .git) =====
-      - name: 📦 Create clean source code artifact
+      - name: Create clean source code artifact
         run: |
           mkdir -p source-code-clean
           
@@ -325,13 +331,13 @@ jobs:
           cp -r frontend backend python_service .github README.md .gitignore source-code-clean/
           
           # Remove unwanted directories
-          find source-code-clean -type d -name "node_modules" -prune -exec rm -rf {} + 2>/dev/null || true
-          find source-code-clean -type d -name "build" -prune -exec rm -rf {} + 2>/dev/null || true
-          find source-code-clean -type d -name "coverage" -prune -exec rm -rf {} + 2>/dev/null || true
-          find source-code-clean -type d -name "htmlcov" -prune -exec rm -rf {} + 2>/dev/null || true
-          find source-code-clean -type d -name "reports" -prune -exec rm -rf {} + 2>/dev/null || true
-          find source-code-clean -type d -name "__pycache__" -prune -exec rm -rf {} + 2>/dev/null || true
-          find source-code-clean -type f -name "*.pyc" -delete 2>/dev/null || true
+          find source-code-clean -type d -name "node_modules" -prune -exec rm -rf {} + 2>/dev/null
+          find source-code-clean -type d -name "build" -prune -exec rm -rf {} + 2>/dev/null
+          find source-code-clean -type d -name "coverage" -prune -exec rm -rf {} + 2>/dev/null
+          find source-code-clean -type d -name "htmlcov" -prune -exec rm -rf {} + 2>/dev/null
+          find source-code-clean -type d -name "reports" -prune -exec rm -rf {} + 2>/dev/null
+          find source-code-clean -type d -name "__pycache__" -prune -exec rm -rf {} + 2>/dev/null
+          find source-code-clean -type f -name "*.pyc" -delete 2>/dev/null
           
           # Create README
           cat > source-code-clean/ARTIFACT_README.md << 'EOFSRC'
