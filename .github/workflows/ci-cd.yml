@@ -55,14 +55,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo "✅ Python dependencies installed"
-      
-      - name: 🎭 Configure Playwright for CI
-        working-directory: ./python_service
-        run: |
-          pip install playwright
-          playwright install --dry-run
-          echo "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1" >> $GITHUB_ENV
-          echo "⚠️ Playwright configured for CI mode (browsers skipped)"
+          echo "⚠️ Skipping Playwright browsers (tests run in API-only mode)"
 
   # ============================================================================
   # STAGE 2: TEST (All Services) - FAIL FAST
@@ -71,8 +64,6 @@ jobs:
     name: Test All Services
     runs-on: ubuntu-latest
     needs: [build]
-    env:
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -112,15 +103,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest-playwright
       
-      - name: 🧪 Run Python tests (without browser)
+      - name: 🧪 Run Python tests
         working-directory: ./python_service
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: |
-          pytest test_main.py -v --cov=main --cov-report=html --cov-report=term -m "not browser"
-          echo "✅ Python tests completed (browser tests skipped)"
+          pytest test_main.py -v --cov=main --cov-report=html --cov-report=term
+          echo "✅ Python tests completed (API-only mode)"
 
   # ============================================================================
   # STAGE 3: QUALITY CHECKS (Coverage, Lint, Security) - FAIL FAST
@@ -129,8 +117,6 @@ jobs:
     name: Quality Checks (Coverage, Lint, Security)
     runs-on: ubuntu-latest
     needs: [test]
-    env:
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -199,14 +185,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest-playwright pylint bandit
+          pip install pylint bandit
       
       - name: 📊 Python Coverage
         working-directory: ./python_service
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: |
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml -m "not browser"
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           echo "✅ Python coverage generated"
 
       - name: 🔍 Python Lint
@@ -229,8 +213,6 @@ jobs:
     name: Create Two Artifacts
     runs-on: ubuntu-latest
     needs: [quality-checks]
-    env:
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     steps:
       - name: 📥 Checkout complete source code
         uses: actions/checkout@v4
@@ -271,8 +253,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest-playwright pylint bandit
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml -m "not browser"
+          pip install pylint bandit
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           mkdir -p reports
           pylint main.py --output-format=json
           bandit -r . -f json
@@ -311,8 +293,9 @@ jobs:
           - Security: `python_service/reports/bandit-report.json`
           
           ## Note
-          - Playwright browser tests skipped in CI environment
-          - Running in API-only mode due to GitHub Actions limitations
+          - Playwright browsers not installed in CI environment
+          - Tests run in API-only mode (functional for endpoint validation)
+          - For full browser testing, run locally with: playwright install
           EOFREADME
           
           zip -r ci-cd-reports.zip ci-cd-reports/
@@ -394,7 +377,7 @@ jobs:
           echo "╚════════════════════════════════════════════════════════════════╝"
           echo ""
           echo "✅ Stage 1: BUILD - All services built successfully"
-          echo "✅ Stage 2: TEST - All tests passed (browser tests skipped in CI)"
+          echo "✅ Stage 2: TEST - All tests passed (API endpoints validated)"
           echo "✅ Stage 3: QUALITY CHECKS - Coverage, Lint, Security completed"
           echo "✅ Stage 4: ARTIFACTS - 2 artifacts created"
           echo ""
@@ -402,4 +385,4 @@ jobs:
           echo "📦 Artifact 2: source-code-clean.zip (Source code without node_modules)"
           echo ""
           echo "🎓 Simplified CI/CD for academic demonstration"
-          echo "⚠️  Playwright browser tests skipped (CI environment limitation)"
+          echo "⚠️  Playwright browsers not installed (tests validate API endpoints only)"
