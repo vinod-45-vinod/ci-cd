@@ -12,6 +12,7 @@ __pycache__/
 frontend/build/
 backend/pdfs/
 python_service/pdfs/
+pdfs/
 *.pdf
 
 # IDE

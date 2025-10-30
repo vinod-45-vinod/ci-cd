@@ -9,6 +9,8 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 from collections import Counter
+from weasyprint import HTML
+from io import BytesIO
 
 # Configure logging
 logging.basicConfig(
@@ -75,7 +77,7 @@ async def fetch_html(url: str) -> str:
 
 def parse_wikipedia(html: str) -> tuple[str, str]:
     """Special parser for Wikipedia pages"""
-    soup = BeautifulSoup(html, 'lxml')
+    soup = BeautifulSoup(html, 'html.parser')
     
     # Extract title safely
     title_element = soup.find('h1') or soup.find('title')
@@ -108,6 +110,10 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
         '.mw-editsection',
         '.reference',
         '.references',
+        '.reflist',
+        '.refbegin',
+        'sup.reference',
+        'ol.references',
         '.navbox',
         '.infobox',
         '.vertical-navbox',
@@ -123,6 +129,9 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
         '#References',
         '#Further_reading',
         '#Notes',
+        '#See_also',
+        '#Bibliography',
+        '#Citations',
         '.navbox',
         '.vertical-navbox',
         '.infobox',
@@ -135,7 +144,11 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
         '#toc',
         '.hatnote',
         '.shortdescription',
-        '.nomobile'
+        '.nomobile',
+        '.sistersitebox',
+        '.mbox-small',
+        'table.sidebar',
+        'table.navbox'
     ]
     
     for selector in unwanted_selectors:
@@ -143,11 +156,37 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
         for element in elements:
             element.decompose()
     
+    # Remove all superscript reference numbers [1], [2], etc.
+    for sup in main_content.find_all('sup', class_='reference'):
+        sup.decompose()
+    
+    # Remove any remaining sup tags that look like references
+    for sup in main_content.find_all('sup'):
+        if sup.get_text(strip=True).startswith('['):
+            sup.decompose()
+    
     # Also remove edit sections and navigation
     for element in main_content.find_all(['span', 'div']):
         classes = element.get('class', [])
-        if classes and any('edit' in str(cls).lower() for cls in classes):
+        if classes and any('edit' in str(cls).lower() or 'ref' in str(cls).lower() for cls in classes):
             element.decompose()
+    
+    # Remove sections that are typically at the end (References, See also, etc.)
+    for heading in main_content.find_all(['h2', 'h3']):
+        heading_text = heading.get_text(strip=True).lower()
+        if any(keyword in heading_text for keyword in [
+            'reference', 'citation', 'note', 'see also', 'external link', 
+            'further reading', 'bibliography', 'source'
+        ]):
+            # Remove this heading and all siblings after it until next heading or end
+            current = heading
+            while current:
+                next_sibling = current.find_next_sibling()
+                current.decompose()
+                current = next_sibling
+                # Stop if we hit another h2
+                if current and current.name == 'h2':
+                    break
     
     logger.info("Cleaned Wikipedia unwanted elements")
     
@@ -155,8 +194,42 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
     content_elements = []
     seen_texts = set()  # Avoid duplicates
     
-    for element in main_content.find_all(['h1', 'h2', 'h3', 'p', 'ul', 'ol', 'li']):
-        # Skip empty elements
+    for element in main_content.find_all(['h1', 'h2', 'h3', 'p', 'ul', 'ol', 'li', 'img', 'figure']):
+        # Handle images
+        if element.name in ['img', 'figure']:
+            # Skip small images (likely icons or ads)
+            if element.name == 'img':
+                width = element.get('width', '')
+                height = element.get('height', '')
+                src = element.get('src', '')
+                
+                # Skip if it's a small icon, ad, or logo
+                try:
+                    if width and int(width) < 100:
+                        continue
+                    if height and int(height) < 100:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+                
+                # Skip if src contains ad-related keywords
+                if any(keyword in src.lower() for keyword in ['ad', 'logo', 'icon', 'button', 'banner']):
+                    continue
+                
+                # Skip if no valid src
+                if not src or src.startswith('data:'):
+                    continue
+                    
+                content_elements.append(element)
+            
+            # Handle figure elements (which contain images)
+            elif element.name == 'figure':
+                img = element.find('img')
+                if img and img.get('src'):
+                    content_elements.append(element)
+            continue
+        
+        # Handle text elements
         text = safe_get_text(element)
         if not text or len(text) < 10:
             continue
@@ -180,12 +253,17 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
         content_elements = []
         seen_texts = set()
         
-        # Get all paragraphs and headings with substantial text
-        for element in main_content.find_all(['h1', 'h2', 'h3', 'p']):
-            text = safe_get_text(element)
-            if text and len(text) > 20 and text not in seen_texts:
-                content_elements.append(element)
-                seen_texts.add(text)
+        # Get all paragraphs, headings, and images with substantial content
+        for element in main_content.find_all(['h1', 'h2', 'h3', 'p', 'img']):
+            if element.name == 'img':
+                src = element.get('src', '')
+                if src and not src.startswith('data:'):
+                    content_elements.append(element)
+            else:
+                text = safe_get_text(element)
+                if text and len(text) > 20 and text not in seen_texts:
+                    content_elements.append(element)
+                    seen_texts.add(text)
     
     logger.info(f"Final Wikipedia content elements: {len(content_elements)}")
     
@@ -241,6 +319,26 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
             font-size: 16px;
             line-height: 1.6;
         }}
+        img {{
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 10px;
+            background: white;
+        }}
+        figure {{
+            margin: 30px 0;
+            text-align: center;
+        }}
+        figcaption {{
+            font-size: 14px;
+            color: #718096;
+            margin-top: 10px;
+            font-style: italic;
+        }}
     </style>
 </head>
 <body>
@@ -249,7 +347,42 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
     
     # Add content elements
     for element in content_elements:
-        cleaned_html += str(element) + '\n'
+        if element.name == 'img':
+            src = element.get('src', '')
+            alt = element.get('alt', '')
+            
+            # Handle protocol-relative URLs
+            if src.startswith('//'):
+                src = f"https:{src}"
+            # Handle relative URLs
+            elif src.startswith('/'):
+                src = f"https://en.wikipedia.org{src}"
+            
+            cleaned_html += f'<img src="{src}" alt="{alt}" />\n'
+        elif element.name == 'figure':
+            # Handle figure with image and caption
+            img = element.find('img')
+            caption = element.find('figcaption')
+            
+            if img:
+                src = img.get('src', '')
+                alt = img.get('alt', '')
+                
+                if src.startswith('//'):
+                    src = f"https:{src}"
+                elif src.startswith('/'):
+                    src = f"https://en.wikipedia.org{src}"
+                
+                cleaned_html += '<figure>\n'
+                cleaned_html += f'<img src="{src}" alt="{alt}" />\n'
+                
+                if caption:
+                    caption_text = safe_get_text(caption)
+                    cleaned_html += f'<figcaption>{caption_text}</figcaption>\n'
+                
+                cleaned_html += '</figure>\n'
+        else:
+            cleaned_html += str(element) + '\n'
     
     # Add footer if we have content
     if content_elements:
@@ -272,7 +405,7 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
 
 def parse_general_blog(html: str) -> tuple[str, str]:
     """Parser for general websites"""
-    soup = BeautifulSoup(html, 'lxml')
+    soup = BeautifulSoup(html, 'html.parser')
     
     # Remove unwanted elements
     unwanted_tags = ['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'noscript']
@@ -439,7 +572,7 @@ def save_debug_files(request_id: str, html: str, cleaned_html: str, title: str):
             f.write(cleaned_html)
         
         # Save extracted text only
-        soup = BeautifulSoup(cleaned_html, 'lxml')
+        soup = BeautifulSoup(cleaned_html, 'html.parser')
         text_only = soup.get_text(separator='\n', strip=True)
         with open(os.path.join(debug_dir, f'{request_id}_text.txt'), 'w', encoding='utf-8') as f:
             f.write(f"TITLE: {title}\n")
@@ -465,17 +598,20 @@ def save_debug_files(request_id: str, html: str, cleaned_html: str, title: str):
     except Exception as e:
         logger.error(f"Error saving debug files: {e}")
 
-async def generate_pdf_playwright(html_content: str, output_path: str):
-    """Generate PDF from HTML content - mock implementation for CI/CD testing"""
+async def generate_pdf(html_content: str, output_path: str):
+    """Generate PDF from HTML content using WeasyPrint"""
     try:
-        # For testing purposes, create a simple text file as placeholder
-        # In production, this would use a proper PDF generation library
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write("PDF Placeholder - Generated in test mode\n")
-            f.write(f"Timestamp: {datetime.now().isoformat()}\n")
-            f.write(f"Content length: {len(html_content)} characters\n")
+        # Use WeasyPrint to convert HTML to PDF
+        # Running in a thread pool to avoid blocking the event loop
+        loop = asyncio.get_event_loop()
         
-        logger.info(f"PDF placeholder generated successfully: {output_path}")
+        def convert_html_to_pdf():
+            # WeasyPrint creates PDF from HTML string
+            HTML(string=html_content).write_pdf(output_path)
+        
+        await loop.run_in_executor(None, convert_html_to_pdf)
+        
+        logger.info(f"PDF generated successfully: {output_path}")
             
     except Exception as e:
         logger.error(f"Error generating PDF: {e}")
@@ -537,7 +673,7 @@ async def process_pdf_generation(request_id: str, url: str):
         # Generate PDF
         pdf_filename = f"{request_id}.pdf"
         pdf_path = os.path.join(PDF_OUTPUT_DIR, pdf_filename)
-        await generate_pdf_playwright(cleaned_html, pdf_path)
+        await generate_pdf(cleaned_html, pdf_path)
         
         # Notify backend
         await notify_backend(request_id, pdf_path, "completed")
