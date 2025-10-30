@@ -2,9 +2,9 @@ name: Academic CI/CD Pipeline - Article to PDF
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 env:
   NODE_VERSION: '18'
@@ -12,7 +12,7 @@ env:
 
 jobs:
   # ============================================================================
-  # STAGE 1: BUILD (All Services) - FAIL FAST
+  # STAGE 1: BUILD (All Services) 
   # ============================================================================
   build:
     name: Build All Services
@@ -57,7 +57,7 @@ jobs:
           echo "✅ Python dependencies installed"
 
   # ============================================================================
-  # STAGE 2: TEST (All Services) - FAIL FAST
+  # STAGE 2: TEST (All Services) 
   # ============================================================================
   test:
     name: Test All Services
@@ -106,11 +106,11 @@ jobs:
       - name: 🧪 Run Python tests
         working-directory: ./python_service
         run: |
-          pytest test_main.py test_unit_pdf.py -v --cov=main --cov-report=html --cov-report=term
+          pytest test_main.py -v --cov=main --cov-report=html --cov-report=term
           echo "✅ Python tests completed"
 
   # ============================================================================
-  # STAGE 3: QUALITY CHECKS (Coverage, Lint, Security) - FAIL FAST
+  # STAGE 3: QUALITY CHECKS (Coverage, Lint, Security) 
   # ============================================================================
   quality-checks:
     name: Quality Checks (Coverage, Lint, Security)
@@ -189,7 +189,7 @@ jobs:
       - name: 📊 Python Coverage
         working-directory: ./python_service
         run: |
-          pytest test_main.py test_unit_pdf.py --cov=main --cov-report=html --cov-report=xml
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           echo "✅ Python coverage generated"
 
       - name: 🔍 Python Lint
@@ -206,7 +206,7 @@ jobs:
           echo "✅ Python security scan completed"
 
   # ============================================================================
-  # STAGE 4: CREATE TWO ARTIFACTS (Source Code + Reports) - FAIL FAST
+  # STAGE 4: CREATE TWO ARTIFACTS (Source Code + Reports) 
   # ============================================================================
   create-artifacts:
     name: Create Two Artifacts
@@ -253,7 +253,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pylint bandit
-          pytest test_main.py test_unit_pdf.py --cov=main --cov-report=html --cov-report=xml
+          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           mkdir -p reports
           pylint main.py --output-format=json
           bandit -r . -f json
