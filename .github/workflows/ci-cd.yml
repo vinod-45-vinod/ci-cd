@@ -146,7 +146,7 @@ jobs:
         run: |
           mkdir -p reports
           npm run lint > reports/eslint-report.txt 2>&1 || echo "Lint warnings found"
-          npm run lint --format json > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
+          npx eslint src/**/*.{js,jsx} --format json --max-warnings=0 > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
           echo "✅ Frontend lint completed"
 
       - name: 🔒 Frontend Security
@@ -172,7 +172,7 @@ jobs:
         run: |
           mkdir -p reports
           npm run lint > reports/eslint-report.txt 2>&1 || echo "Lint warnings found"
-          npm run lint --format json > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
+          npx eslint server.js server.test.js --format json --max-warnings=0 > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
           echo "✅ Backend lint completed"
 
       - name: 🔒 Backend Security
@@ -241,7 +241,7 @@ jobs:
           npm run test:coverage
           mkdir -p reports
           npm run lint > reports/eslint-report.txt 2>&1 || echo "Lint warnings found"
-          npm run lint --format json > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
+          npx eslint src/**/*.{js,jsx} --format json --max-warnings=0 > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
           npm audit --production --audit-level=critical --json > reports/npm-audit-report.json 2>&1 || echo "⚠️ Non-critical vulnerabilities found"
           echo "✅ Frontend reports generated"
 
@@ -252,7 +252,7 @@ jobs:
           npm run test:coverage
           mkdir -p reports
           npm run lint > reports/eslint-report.txt 2>&1 || echo "Lint warnings found"
-          npm run lint --format json > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
+          npx eslint server.js server.test.js --format json --max-warnings=0 > reports/eslint-report.json 2>&1 || echo "Lint warnings found"
           npm audit --production --audit-level=critical --json > reports/npm-audit-report.json 2>&1 || echo "⚠️ Non-critical vulnerabilities found"
           echo "✅ Backend reports generated"
 
