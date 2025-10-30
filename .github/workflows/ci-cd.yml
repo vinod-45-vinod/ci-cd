@@ -55,7 +55,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo "✅ Python dependencies installed"
-          echo "⚠️ Skipping Playwright browsers (tests run in API-only mode)"
+      
+      - name: 🎭 Install Playwright browsers (with fallback)
+        working-directory: ./python_service
+        continue-on-error: true
+        run: |
+          echo "Attempting to install Playwright browsers..."
+          python -m playwright install chromium --with-deps || {
+            echo "⚠️ Playwright browser installation failed"
+            echo "Continuing without browsers - tests will run in API-only mode"
+          }
+          echo "✅ Playwright setup completed"
 
   # ============================================================================
   # STAGE 2: TEST (All Services) - FAIL FAST
@@ -103,6 +113,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+      
+      - name: 🎭 Install Playwright browsers (with fallback)
+        working-directory: ./python_service
+        continue-on-error: true
+        run: |
+          echo "Attempting to install Playwright browsers..."
+          python -m playwright install chromium --with-deps || {
+            echo "⚠️ Playwright browser installation failed"
+            echo "Continuing without browsers - tests will run in API-only mode"
+          }
+          echo "✅ Playwright setup completed"
       
       - name: 🧪 Run Python tests
         working-directory: ./python_service
@@ -187,6 +208,17 @@ jobs:
           pip install -r requirements.txt
           pip install pylint bandit
       
+      - name: 🎭 Install Playwright browsers (with fallback)
+        working-directory: ./python_service
+        continue-on-error: true
+        run: |
+          echo "Attempting to install Playwright browsers..."
+          python -m playwright install chromium --with-deps || {
+            echo "⚠️ Playwright browser installation failed"
+            echo "Continuing without browsers - tests will run in API-only mode"
+          }
+          echo "✅ Playwright setup completed"
+      
       - name: 📊 Python Coverage
         working-directory: ./python_service
         run: |
@@ -254,6 +286,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pylint bandit
+          
+          # Try to install Playwright browsers (non-blocking)
+          echo "Attempting to install Playwright browsers..."
+          python -m playwright install chromium --with-deps || {
+            echo "⚠️ Playwright browser installation failed"
+            echo "Continuing without browsers - tests will run in API-only mode"
+          }
+          
           pytest test_main.py --cov=main --cov-report=html --cov-report=xml
           mkdir -p reports
           pylint main.py --output-format=json
@@ -293,9 +333,9 @@ jobs:
           - Security: `python_service/reports/bandit-report.json`
           
           ## Note
-          - Playwright browsers not installed in CI environment
-          - Tests run in API-only mode (functional for endpoint validation)
-          - For full browser testing, run locally with: playwright install
+          - Playwright browser installation attempted (may fail due to CDN issues)
+          - Tests run in API-only mode if browsers unavailable
+          - For guaranteed browser testing, run locally with: playwright install
           EOFREADME
           
           zip -r ci-cd-reports.zip ci-cd-reports/
