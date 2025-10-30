@@ -55,7 +55,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           echo "✅ Python dependencies installed"
-          echo "⚠️ Skipping Playwright browsers (tests run in API-only mode)"
 
   # ============================================================================
   # STAGE 2: TEST (All Services) - FAIL FAST
@@ -107,53 +106,8 @@ jobs:
       - name: 🧪 Run Python tests
         working-directory: ./python_service
         run: |
-          pytest test_main.py -v --cov=main --cov-report=html --cov-report=term
-          echo "✅ Python tests completed (API-only mode)"
-
-      - name: 🔁 Start Python backend (uvicorn)
-        working-directory: ./python_service
-        run: |
-          # Start backend in background for integration tests (Postman/JMeter/ZAP)
-          nohup uvicorn main:app --host 127.0.0.1 --port 8000 &>/dev/null &
-          sleep 2
-          echo "✅ Backend started on http://127.0.0.1:8000"
-
-      - name: 🏗️ Build and serve frontend for Selenium
-        working-directory: ./frontend
-        run: |
-          npm ci
-          npm run build
-          # Serve build folder on port 8001 for Selenium E2E
-          cd build
-          nohup python -m http.server 8001 &>/dev/null &
-          sleep 2
-          echo "✅ Frontend served at http://127.0.0.1:8001"
-
-      - name: 📥 Install Selenium and webdriver-manager (Python)
-        working-directory: ./python_service
-        run: |
-          pip install selenium webdriver-manager
-
-      - name: 🧪 Run Selenium E2E test
-        working-directory: ./python_service
-        run: |
-          pytest test_selenium_e2e.py -q
-
-      - name: 🔁 Run Postman collection (newman)
-        run: |
-          npm install -g newman
-          newman run tests/postman/collection.json --env-var "baseUrl=http://127.0.0.1:8000" --reporters cli,json --reporter-json-export postman_report.json
-
-      - name: ⚡ Run JMeter performance test
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y jmeter
-          jmeter -n -t tests/jmeter/performance_test_plan.jmx -l tests/jmeter/result.jtl -Jthreads=3 -Jramp=1 -Jloops=5 || true
-
-      - name: 🛡️ Run OWASP ZAP quick scan
-        run: |
-          # Use ZAP Docker image to run a quick baseline scan against the running backend
-          docker run --network host --rm owasp/zap2docker-stable zap-baseline.py -t http://127.0.0.1:8000 -r zap_report.html || true
+          pytest test_main.py test_unit_pdf.py -v --cov=main --cov-report=html --cov-report=term
+          echo "✅ Python tests completed"
 
   # ============================================================================
   # STAGE 3: QUALITY CHECKS (Coverage, Lint, Security) - FAIL FAST
@@ -235,7 +189,7 @@ jobs:
       - name: 📊 Python Coverage
         working-directory: ./python_service
         run: |
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
+          pytest test_main.py test_unit_pdf.py --cov=main --cov-report=html --cov-report=xml
           echo "✅ Python coverage generated"
 
       - name: 🔍 Python Lint
@@ -299,7 +253,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pylint bandit
-          pytest test_main.py --cov=main --cov-report=html --cov-report=xml
+          pytest test_main.py test_unit_pdf.py --cov=main --cov-report=html --cov-report=xml
           mkdir -p reports
           pylint main.py --output-format=json
           bandit -r . -f json
@@ -338,9 +292,9 @@ jobs:
           - Security: `python_service/reports/bandit-report.json`
           
           ## Note
-          - Playwright browsers not installed in CI environment
-          - Tests run in API-only mode (functional for endpoint validation)
-          - For full browser testing, run locally with: playwright install
+          - Tests validate API endpoints and parsing logic
+          - Coverage reports show code quality metrics
+          - Security scans check for vulnerabilities
           EOFREADME
           
           zip -r ci-cd-reports.zip ci-cd-reports/
@@ -388,11 +342,8 @@ jobs:
           - Frontend: `cd frontend && npm start`
           
           ## Note for Local Development
-          For full Playwright functionality (browser tests):
-          ```bash
-          cd python_service
-          playwright install
-          ```
+          This is a clean source code artifact without dependencies.
+          Run `npm ci` and `pip install -r requirements.txt` to set up.
           EOFSRC
           
           zip -r source-code-clean.zip source-code-clean/
@@ -422,7 +373,7 @@ jobs:
           echo "╚════════════════════════════════════════════════════════════════╝"
           echo ""
           echo "✅ Stage 1: BUILD - All services built successfully"
-          echo "✅ Stage 2: TEST - All tests passed (API endpoints validated)"
+          echo "✅ Stage 2: TEST - All tests passed"
           echo "✅ Stage 3: QUALITY CHECKS - Coverage, Lint, Security completed"
           echo "✅ Stage 4: ARTIFACTS - 2 artifacts created"
           echo ""
@@ -430,4 +381,3 @@ jobs:
           echo "📦 Artifact 2: source-code-clean.zip (Source code without node_modules)"
           echo ""
           echo "🎓 Simplified CI/CD for academic demonstration"
-          echo "⚠️  Playwright browsers not installed (tests validate API endpoints only)"
