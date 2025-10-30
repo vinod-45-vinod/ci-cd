@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Article PDF Generator Service", version="1.0.0")
+app = FastAPI(title="Blog PDF Generator Service", version="1.0.0")
 
 PDF_OUTPUT_DIR = os.getenv("PDF_OUTPUT_DIR", "./pdfs")
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000")
@@ -79,9 +79,9 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
     
     # Extract title safely
     title_element = soup.find('h1') or soup.find('title')
-    title_text = safe_get_text(title_element, "Wikipedia Article")
+    title_text = safe_get_text(title_element, "Wikipedia Blog")
     
-    logger.info(f"Wikipedia article title: {title_text}")
+    logger.info(f"Wikipedia blog title: {title_text}")
     
     # Find the main content area - Wikipedia specific
     content_selectors = [
@@ -261,7 +261,7 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
     else:
         cleaned_html += """
     <div style="text-align: center; color: #666; margin-top: 100px;">
-        <h3>No article content could be extracted</h3>
+        <h3>No blog content could be extracted</h3>
         <p>The page might have a different structure than expected.</p>
     </div>
 """
@@ -270,7 +270,7 @@ def parse_wikipedia(html: str) -> tuple[str, str]:
     
     return cleaned_html, title_text
 
-def parse_general_article(html: str) -> tuple[str, str]:
+def parse_general_blog(html: str) -> tuple[str, str]:
     """Parser for general websites"""
     soup = BeautifulSoup(html, 'lxml')
     
@@ -288,7 +288,7 @@ def parse_general_article(html: str) -> tuple[str, str]:
     
     # Find title safely
     title_element = soup.find('h1') or soup.find('title')
-    title_text = safe_get_text(title_element, "Article")
+    title_text = safe_get_text(title_element, "Blog")
     
     # Find main content
     content_selectors = [
@@ -297,6 +297,7 @@ def parse_general_article(html: str) -> tuple[str, str]:
         '[role="main"]',
         '.content',
         '.article',
+        '.blog',
         '.post',
         '.story',
         '.entry-content',
@@ -314,7 +315,7 @@ def parse_general_article(html: str) -> tuple[str, str]:
             break
     
     if not main_content:
-        logger.info("Using body as fallback for general article")
+        logger.info("Using body as fallback for general blog")
         main_content = soup.find('body')
     
     # Extract content
@@ -330,7 +331,7 @@ def parse_general_article(html: str) -> tuple[str, str]:
                 content_elements.append(element)
                 seen_texts.add(text)
     
-    logger.info(f"Found {len(content_elements)} general article content elements")
+    logger.info(f"Found {len(content_elements)} general blog content elements")
     
     # Build cleaned HTML
     cleaned_html = f"""<!DOCTYPE html>
@@ -401,27 +402,27 @@ def parse_general_article(html: str) -> tuple[str, str]:
     
     return cleaned_html, title_text
 
-def parse_article(html: str, url: str) -> tuple[str, str]:
+def parse_blog(html: str, url: str) -> tuple[str, str]:
     """Choose the appropriate parser based on URL"""
     try:
         if 'wikipedia.org' in url:
             return parse_wikipedia(html)
         else:
-            return parse_general_article(html)
+            return parse_general_blog(html)
     except Exception as e:
-        logger.error(f"Error in parse_article: {e}")
+        logger.error(f"Error in parse_blog: {e}")
         # Return a basic HTML as fallback
         fallback_html = """
         <!DOCTYPE html>
         <html>
-        <head><title>Article</title></head>
+        <head><title>Blog</title></head>
         <body>
-            <h1>Article Content</h1>
-            <p>Unable to parse the article content properly.</p>
+            <h1>Blog Content</h1>
+            <p>Unable to parse the blog content properly.</p>
         </body>
         </html>
         """
-        return fallback_html, "Article"
+        return fallback_html, "Blog"
 
 def save_debug_files(request_id: str, html: str, cleaned_html: str, title: str):
     """Save debug files to inspect parsing"""
@@ -527,8 +528,8 @@ async def process_pdf_generation(request_id: str, url: str):
         # Fetch HTML
         html = await fetch_html(url)
         
-        # Parse and clean article with URL-specific parser
-        cleaned_html, title = parse_article(html, url)
+        # Parse and clean blog with URL-specific parser
+        cleaned_html, title = parse_blog(html, url)
         
         # Save debug files
         save_debug_files(request_id, html, cleaned_html, title)
@@ -563,7 +564,7 @@ async def health_check():
 async def root():
     """Root endpoint"""
     return {
-        "message": "Article PDF Generator Service",
+        "message": "Blog PDF Generator Service",
         "version": "1.0.0",
         "endpoints": {
             "generate_pdf": "POST /generate-pdf",

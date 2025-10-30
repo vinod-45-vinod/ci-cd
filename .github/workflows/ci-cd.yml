@@ -1,4 +1,4 @@
-name: Academic CI/CD Pipeline - Article to PDF
+name: Academic CI/CD Pipeline - Blog to PDF
 
 on:
   push:

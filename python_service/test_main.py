@@ -1,6 +1,6 @@
 import pytest
 from httpx import AsyncClient
-from main import app, parse_general_article
+from main import app, parse_general_blog
 
 @pytest.mark.asyncio
 async def test_generate_pdf_with_wikipedia_india():
@@ -18,11 +18,11 @@ async def test_generate_pdf_with_wikipedia_india():
         assert data["requestId"] == "test-wiki-india"
 
 
-def test_parse_general_article_basic():
-    """Test HTML parsing logic for general articles"""
+def test_parse_general_blog_basic():
+    """Test HTML parsing logic for general blogs"""
     html = """
     <html>
-      <head><title>Test Article</title></head>
+      <head><title>Test Blog</title></head>
       <body>
         <h1>Heading</h1>
         <p>This is test content for unit testing.</p>
@@ -30,8 +30,8 @@ def test_parse_general_article_basic():
     </html>
     """
 
-    cleaned_html, title = parse_general_article(html)
+    cleaned_html, title = parse_general_blog(html)
 
     assert isinstance(cleaned_html, str)
-    assert 'Test Article' in title or 'Heading' in cleaned_html
+    assert 'Test Blog' in title or 'Heading' in cleaned_html
     assert '<p' in cleaned_html

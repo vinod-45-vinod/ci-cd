@@ -115,7 +115,7 @@ app.get('/api/download/:requestId', async (req, res) => {
     return res.status(404).json({ error: 'PDF file not found' });
   }
 
-  res.download(request.pdf_path, 'article.pdf', (err) => {
+  res.download(request.pdf_path, 'blog.pdf', (err) => {
     if (err) {
       console.error('Download error:', err);
       res.status(500).json({ error: 'Failed to download PDF' });

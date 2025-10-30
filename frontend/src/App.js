@@ -45,7 +45,7 @@ function App() {
         throw new Error(data.error || 'Failed to generate PDF');
       }
 
-      setStatus('Fetching article content...');
+      setStatus('Fetching blog content...');
 
       // Poll for PDF generation status
       const requestId = data.requestId;
@@ -102,7 +102,7 @@ function App() {
       const fileUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = fileUrl;
-      link.setAttribute('download', 'article.pdf');
+      link.setAttribute('download', 'blog.pdf');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -116,8 +116,8 @@ function App() {
     <div className="App">
       <div className="container">
         <header className="header">
-          <h1>Article to PDF Converter</h1>
-          <p>Convert any web article into a clean, downloadable PDF</p>
+          <h1>Blog to PDF Converter</h1>
+          <p>Convert any web blog into a clean, downloadable PDF</p>
         </header>
 
         <main className="main-content">
@@ -127,7 +127,7 @@ function App() {
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="Enter article URL (e.g., https://example.com/article)"
+                placeholder="Enter blog URL (e.g., https://example.com/blog)"
                 className="url-input"
                 disabled={loading}
               />

@@ -1,7 +1,7 @@
 {
-  "name": "article-pdf-backend",
+  "name": "blog-pdf-backend",
   "version": "1.0.0",
-  "description": "Backend API for Article to PDF converter",
+  "description": "Backend API for Blog to PDF converter",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

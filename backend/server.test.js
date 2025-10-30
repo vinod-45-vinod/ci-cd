@@ -19,7 +19,7 @@ describe('Backend API Tests', () => {
     }
   });
 
-  test('should accept Wikipedia India URL for article submission', async () => {
+  test('should accept Wikipedia India URL for blog submission', async () => {
     const testUrl = 'https://en.wikipedia.org/wiki/India';
     const response = await request(app)
       .post('/api/fetch')

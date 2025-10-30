@@ -14,7 +14,7 @@ describe('App Component', () => {
     render(<App />);
     
     const testUrl = 'https://en.wikipedia.org/wiki/India';
-    const input = screen.getByPlaceholderText(/Enter article URL/i);
+    const input = screen.getByPlaceholderText(/Enter blog URL/i);
     
     fireEvent.change(input, { target: { value: testUrl } });
     

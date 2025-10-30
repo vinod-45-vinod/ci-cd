@@ -1,11 +1,11 @@
-# Article-to-PDF Converter 📄
+# Blog-to-PDF Converter 📄
 
-![CI/CD Pipeline](https://github.com/YOUR_USERNAME/article-pdf-app/workflows/Academic%20CI/CD%20Pipeline%20-%20Article%20to%20PDF/badge.svg)
+![CI/CD Pipeline](https://github.com/YOUR_USERNAME/article-pdf-app/workflows/Academic%20CI/CD%20Pipeline%20-%20Blog%20to%20PDF/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-%E2%89%A575%25-brightgreen)
 ![Lint Score](https://img.shields.io/badge/lint%20score-%E2%89%A57.5%2F10-blue)
 ![Security](https://img.shields.io/badge/security-scanned-success)
 
-A production-ready full-stack web application that converts any web article into a clean, downloadable PDF with comprehensive CI/CD pipeline and quality gates.
+A production-ready full-stack web application that converts any web blog into a clean, downloadable PDF with comprehensive CI/CD pipeline and quality gates.
 
 ## 🎯 Sprint 1 Features
 
@@ -269,7 +269,7 @@ bandit -r . -ll
 
 ```bash
 # Clone or extract the project
-cd article-pdf-app
+cd blog-pdf-app
 
 # Start all services
 docker-compose up --build
@@ -394,7 +394,7 @@ After running tests with coverage, view detailed HTML reports:
 **POST `/api/fetch`** - Initiates PDF generation
 ```json
 {
-  "url": "https://example.com/article"
+  "url": "https://example.com/blog"
 }
 ```
 
@@ -409,7 +409,7 @@ See `.env.example` files in backend/ and python_service/ directories.
 ## 📈 Project Structure
 
 ```
-article-pdf-app/
+blog-pdf-app/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                    # Complete CI/CD pipeline (6 stages)
