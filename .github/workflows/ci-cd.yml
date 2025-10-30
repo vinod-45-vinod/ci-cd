@@ -49,12 +49,9 @@ jobs:
           npm ci
           echo "✅ Backend dependencies installed"
 
-      - name: 📦 Install Python dependencies
+      - name: 📦 Install dependencies
         working-directory: ./python_service
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          echo "✅ Python dependencies installed"
+        run: pip install -r requirements.txt
       
       - name: 🎭 Install Playwright browsers (with fallback)
         working-directory: ./python_service
@@ -108,11 +105,9 @@ jobs:
           npm test -- --ci --coverage
           echo "✅ Backend tests completed"
 
-      - name: 📦 Install Python dependencies
+      - name: 📦 Install dependencies
         working-directory: ./python_service
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
       
       - name: 🎭 Install Playwright browsers (with fallback)
         working-directory: ./python_service
@@ -201,12 +196,9 @@ jobs:
           echo "✅ Backend security scan completed"
 
       # Python Quality Checks
-      - name: 📦 Install Python dependencies
+      - name: 📦 Install dependencies
         working-directory: ./python_service
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pylint bandit
+        run: pip install -r requirements.txt
       
       - name: 🎭 Install Playwright browsers (with fallback)
         working-directory: ./python_service
@@ -280,11 +272,17 @@ jobs:
           npm audit --production
           echo "✅ Backend reports generated"
 
+      - name: 📦 Install dependencies
+        working-directory: ./python_service
+        run: pip install -r requirements.txt
+      
+      - name: 📦 Install dependencies
+        working-directory: ./python_service
+        run: pip install -r requirements.txt
+      
       - name: 📦 Install Python dependencies and generate reports
         working-directory: ./python_service
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
           pip install pylint bandit
           
           # Try to install Playwright browsers (non-blocking)
